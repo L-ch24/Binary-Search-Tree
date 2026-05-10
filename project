@@ -1,0 +1,120 @@
+class Node:
+    '''
+    이진 트리의 개별 데이터를 저장하는 노드 클래스
+    '''
+    def __init__(self, key):
+        self.key = key      # 노드가 가지고 있는 값
+        self.left = None    # 왼쪽 자식 노드에 대한 참조
+        self.right = None   # 오른쪽 자식 노드에 대한 참조
+
+
+class BinarySearchTree:
+    '''
+    이진 탐색 트리(BST)의 전체 구조를 관리하고 기능을 수행하는 클래스
+    '''
+    def __init__(self):
+        # 트리의 가장 꼭대기 노드(루트)를 초기화
+        self.root = None
+
+    def insert(self, key):
+        '''새로운 원소를 트리에 추가하는 함수'''
+        if self.root is None:
+            # 트리가 비어있다면 루트 노드로 설정
+            self.root = Node(key)
+        else:
+            # 트리가 비어있지 않다면 적절한 위치를 찾아 삽입
+            self._insert_recursive(self.root, key)
+
+    def _insert_recursive(self, node, key):
+        '''재귀적으로 이동하며 삽입 위치를 찾는 보조 함수'''
+        if key < node.key:
+            # 추가하려는 값이 현재 노드보다 작으면 왼쪽으로 이동
+            if node.left is None:
+                node.left = Node(key)
+            else:
+                self._insert_recursive(node.left, key)
+        else:
+            # 추가하려는 값이 현재 노드보다 크거나 같으면 오른쪽으로 이동
+            if node.right is None:
+                node.right = Node(key)
+            else:
+                self._insert_recursive(node.right, key)
+
+    def find(self, key):
+        '''원하는 값의 존재 유무를 확인하는 탐색 함수'''
+        return self._find_recursive(self.root, key)
+
+    def _find_recursive(self, node, key):
+        '''재귀적으로 이동하며 값을 찾는 보조 함수'''
+        if node is None:
+            # 더 이상 갈 곳이 없으면 트리에 값이 없는 것
+            return False
+        if node.key == key:
+            # 값을 찾은 경우 True를 반환
+            return True
+
+        if key < node.key:
+            # 찾는 값이 작으면 왼쪽 서브트리에서 탐색
+            return self._find_recursive(node.left, key)
+        # 찾는 값이 크면 오른쪽 서브트리에서 탐색
+        return self._find_recursive(node.right, key)
+
+    def delete(self, key):
+        '''특정 원소를 트리에서 삭제하는 함수'''
+        self.root = self._delete_recursive(self.root, key)
+
+    def _delete_recursive(self, node, key):
+        '''재귀적으로 이동하며 노드를 삭제하는 보조 함수'''
+        if node is None:
+            return node
+
+        # 삭제할 노드를 찾기 위해 탐색
+        if key < node.key:
+            node.left = self._delete_recursive(node.left, key)
+        elif key > node.key:
+            node.right = self._delete_recursive(node.right, key)
+        else:
+            # 삭제할 노드를 찾은 경우 (key == node.key)
+
+            # 1. 자식 노드가 없는 '리프 노드'이거나 자식이 하나인 경우
+            if node.left is None:
+                return node.right
+            elif node.right is None:
+                return node.left
+
+            # 2. 자식 노드가 둘인 경우
+            # 오른쪽 서브트리에서 가장 작은 값을 찾아 현재 노드를 대체
+            temp = self._min_value_node(node.right)
+            node.key = temp.key
+            # 대체에 사용된 오른쪽 서브트리의 최소값 노드를 삭제
+            node.right = self._delete_recursive(node.right, temp.key)
+
+        return node
+
+    def _min_value_node(self, node):
+        '''주어진 노드로부터 시작하여 가장 작은 값(가장 왼쪽 끝)을 가진 노드를 반환'''
+        current = node
+        while current.left is not None:
+            current = current.left
+        return current
+
+
+# 과제 수행을 위한 사용 ex
+binarytree = BinarySearchTree()
+
+# 원소 추가 (insert)
+binarytree.insert(50)
+binarytree.insert(30)
+binarytree.insert(20)
+binarytree.insert(40)
+binarytree.insert(70)
+binarytree.insert(60)
+binarytree.insert(80)
+
+# 원소 탐색 (find)
+print('탐색 결과 (40):', binarytree.find(40))  # True
+print('탐색 결과 (90):', binarytree.find(90))  # False
+
+# 원소 삭제 (delete)
+binarytree.delete(20)
+print('삭제 후 탐색 (20):', binarytree.find(20))  # False
